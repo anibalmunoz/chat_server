@@ -42,38 +42,46 @@ const login = async (req, res = response) => {
   const { email, password } = req.body;
 
   try {
-    const existeEmail = await Usuario.findOne({ email: email });
-    if (!existeEmail) {
-      return res.status(403).json({
+    const usuarioDB = await Usuario.findOne({ email: email });
+    if (!usuarioDB) {
+      return res.status(404).json({
         ok: false,
         msg: "El usuario no esta registrado",
       });
     }
 
-    const usuario = new Usuario(res.body);
+    //validar password
+    const validPassword = bcrypt.compareSync(password, usuarioDB.password);
+    if (!validPassword) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Credenciales incorrectas",
+      });
+    }
 
-    // //encriptar contrasenia
-    // const salt = bcrypt.genSaltSync();
-    // usuario.password = bcrypt.hashSync(password, salt);
+    //generar el JWT
+    const token = await generarJWT(usuarioDB.id);
 
-    // //Generar mi JWT
-    // const token = await generarJWT(usuario.id);
-
-    // //Guardar usuario en base de datos
-    // await usuario.save();
-
-    //respuesta json del consumo del servicio
-    res.json({ ok: true, usuario, token });
+    //respuesta en caso de login exitoso
+    res.json({ ok: true, usuarioDB, token });
   } catch (error) {
     console.log(error);
-    res.status(401).json({
+    res.status(500).json({
       ok: false,
-      msg: "Error al iniciar sesion",
+      msg: "Comuniquese con el administrador",
     });
   }
+};
+
+const renewToken = (req, resp = response) => {
+  resp.json({
+    ok: true,
+    uid: req.uid,
+  });
 };
 
 module.exports = {
   crearUsuario,
   login,
+  renewToken,
 };
