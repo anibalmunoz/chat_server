@@ -63,6 +63,7 @@ const login = async (req, res = response) => {
     const token = await generarJWT(usuarioDB.id);
 
     //respuesta en caso de login exitoso
+
     res.json({ ok: true, usuarioDB, token });
   } catch (error) {
     console.log(error);
@@ -73,16 +74,18 @@ const login = async (req, res = response) => {
   }
 };
 
-const renewToken = async (req, resp = response) => {
+const renewToken = async (req, res = response) => {
+  //Este uid fue envaido desde el midleware validar-jwts
   const uid = req.uid;
 
-  //generar nuevo jwt.
+  //Generar nuevo jwt.
   const token = await generarJWT(uid);
 
-  //Obtener el usuario por el UID, Usuario
-  const usuario = Usuario.findById(uid);
+  //Obtener el usuario desde la base de datos por el UID, Usuario
+  //(La interfaz usuario esta ligada con mongoose)
+  const usuario = await Usuario.findById(uid);
 
-  resp.json({
+  res.json({
     ok: true,
     usuario,
     token,
