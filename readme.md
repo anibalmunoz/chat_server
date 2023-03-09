@@ -1,2 +1,2 @@
 Para correr con nodemon ejecutar 
-npm run start:dev
+`npm run start:dev`
